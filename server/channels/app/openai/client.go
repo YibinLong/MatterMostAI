@@ -4,12 +4,14 @@
 package openai
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -48,12 +50,68 @@ type ChatResponse struct {
 func NewClient() (*Client, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
+		// Try to load from .env file
+		apiKey = loadAPIKeyFromEnvFile()
+	}
+	if apiKey == "" {
 		return nil, fmt.Errorf("OPENAI_API_KEY environment variable not set")
 	}
 	return &Client{
 		apiKey:     apiKey,
 		httpClient: &http.Client{},
 	}, nil
+}
+
+// loadAPIKeyFromEnvFile attempts to read OPENAI_API_KEY from .env file
+func loadAPIKeyFromEnvFile() string {
+	// Try multiple possible locations for the .env file
+	possiblePaths := []string{
+		".env",
+		"../.env",
+		"../../.env",
+	}
+
+	// Also try from the working directory up to the project root
+	if cwd, err := os.Getwd(); err == nil {
+		for i := 0; i < 5; i++ {
+			envPath := filepath.Join(cwd, strings.Repeat("../", i), ".env")
+			possiblePaths = append(possiblePaths, envPath)
+		}
+	}
+
+	for _, envPath := range possiblePaths {
+		if apiKey := readAPIKeyFromFile(envPath); apiKey != "" {
+			return apiKey
+		}
+	}
+
+	return ""
+}
+
+func readAPIKeyFromFile(filePath string) string {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		// Skip comments and empty lines
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		// Look for OPENAI_API_KEY=...
+		if strings.HasPrefix(line, "OPENAI_API_KEY=") {
+			value := strings.TrimPrefix(line, "OPENAI_API_KEY=")
+			// Remove quotes if present
+			value = strings.Trim(value, `"'`)
+			return value
+		}
+	}
+
+	return ""
 }
 
 func (c *Client) Summarize(messages []string, context string) (string, error) {

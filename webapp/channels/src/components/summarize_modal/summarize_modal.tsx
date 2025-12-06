@@ -35,7 +35,7 @@ const getErrorMessage = (error: string): string => {
     if (error.includes('token_limit')) {
         return 'The selected time range contains too many messages. Please select a shorter time range and try again.';
     }
-    if (error.includes('OPENAI_API_KEY')) {
+    if (error.includes('OPENAI_API_KEY') || error.includes('openai_client')) {
         return 'AI summarization is not configured. Please contact your administrator.';
     }
     if (error.includes('disabled')) {
