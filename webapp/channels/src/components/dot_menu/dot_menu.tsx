@@ -22,6 +22,7 @@ import {
     PinIcon,
     PinOutlineIcon,
     ReplyOutlineIcon,
+    TextBoxOutlineIcon,
     TrashCanOutlineIcon,
 } from '@mattermost/compass-icons/components';
 import type {Post} from '@mattermost/types/posts';
@@ -37,6 +38,7 @@ import ForwardPostModal from 'components/forward_post_modal';
 import * as Menu from 'components/menu';
 import MoveThreadModal from 'components/move_thread_modal';
 import ChannelPermissionGate from 'components/permissions_gates/channel_permission_gate';
+import SummarizeModal from 'components/summarize_modal';
 
 import {Locations, ModalIdentifiers, Constants} from 'utils/constants';
 import DelayedAction from 'utils/delayed_action';
@@ -296,6 +298,19 @@ export class DotMenuClass extends React.PureComponent<Props, State> {
         };
 
         this.props.actions.openModal(forwardPostModalData);
+    };
+
+    handleSummarizeThread = (): void => {
+        const summarizeModalData = {
+            modalId: ModalIdentifiers.SUMMARIZE,
+            dialogType: SummarizeModal,
+            dialogProps: {
+                postId: this.props.post.id,
+                mode: 'thread' as const,
+            },
+        };
+
+        this.props.actions.openModal(summarizeModalData);
     };
 
     handleEditMenuItemActivated = (): void => {
@@ -633,6 +648,20 @@ export class DotMenuClass extends React.PureComponent<Props, State> {
                         leadingElement={<MessageArrowRightOutlineIcon size={18}/>}
                         trailingElements={<ShortcutKey shortcutKey='W'/>}
                         onClick={this.handleMoveThreadMenuItemActivated}
+                    />
+                }
+                {Boolean(!isSystemMessage && !isBurnOnReadPost && !this.props.post.root_id) &&
+                    <Menu.Item
+                        id={`summarize_thread_${this.props.post.id}`}
+                        data-testid={`summarize_thread_${this.props.post.id}`}
+                        labels={
+                            <FormattedMessage
+                                id='post_info.summarize_thread'
+                                defaultMessage='Summarize Thread'
+                            />
+                        }
+                        leadingElement={<TextBoxOutlineIcon size={18}/>}
+                        onClick={this.handleSummarizeThread}
                     />
                 }
                 {!isSystemMessage && (this.state.canEdit || this.state.canDelete) && <Menu.Separator/>}

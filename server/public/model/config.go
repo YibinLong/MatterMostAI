@@ -2792,6 +2792,16 @@ func (s *LibreTranslateProviderSettings) SetDefaults() {
 // 	}
 // }
 
+type AISettings struct {
+	Enable *bool `access:"write_restrictable,cloud_restrictable"`
+}
+
+func (s *AISettings) SetDefaults() {
+	if s.Enable == nil {
+		s.Enable = NewPointer(true)
+	}
+}
+
 type SamlSettings struct {
 	// Basic
 	Enable                        *bool `access:"authentication_saml"`
@@ -3905,6 +3915,7 @@ type Config struct {
 	AccessControlSettings       AccessControlSettings
 	ContentFlaggingSettings     ContentFlaggingSettings
 	AutoTranslationSettings     AutoTranslationSettings
+	AISettings                  AISettings
 }
 
 func (o *Config) Auditable() map[string]any {
@@ -4023,6 +4034,7 @@ func (o *Config) SetDefaults() {
 	o.ConnectedWorkspacesSettings.SetDefaults(isUpdate, o.ExperimentalSettings)
 	o.AccessControlSettings.SetDefaults()
 	o.ContentFlaggingSettings.SetDefaults()
+	o.AISettings.SetDefaults()
 }
 
 func (o *Config) IsValid() *AppError {

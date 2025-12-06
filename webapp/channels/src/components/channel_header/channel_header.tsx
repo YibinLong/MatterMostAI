@@ -9,6 +9,7 @@ import type {WrappedComponentProps} from 'react-intl';
 
 import CustomStatusEmoji from 'components/custom_status/custom_status_emoji';
 import CustomStatusText from 'components/custom_status/custom_status_text';
+import SummarizeModal from 'components/summarize_modal';
 import Timestamp from 'components/timestamp';
 import WithTooltip from 'components/with_tooltip';
 
@@ -16,6 +17,7 @@ import CallButton from 'plugins/call_button';
 import ChannelHeaderPlug from 'plugins/channel_header_plug';
 import {
     Constants,
+    ModalIdentifiers,
     NotificationLevels,
     RHSStates,
 } from 'utils/constants';
@@ -92,6 +94,19 @@ class ChannelHeader extends React.PureComponent<Props> {
             this.props.actions.closeRightHandSide();
         } else if (this.props.channel) {
             this.props.actions.showChannelFiles(this.props.channel.id);
+        }
+    };
+
+    openSummarizeModal = () => {
+        if (this.props.channel) {
+            this.props.actions.openModal({
+                modalId: ModalIdentifiers.SUMMARIZE,
+                dialogType: SummarizeModal,
+                dialogProps: {
+                    channelId: this.props.channel.id,
+                    mode: 'channel' as const,
+                },
+            });
         }
     };
 
@@ -372,6 +387,17 @@ class ChannelHeader extends React.PureComponent<Props> {
                                             {channelFilesIcon}
                                         </HeaderIconWrapper>
                                     }
+                                    <HeaderIconWrapper
+                                        buttonClass='channel-header__icon channel-header__icon--left btn btn-icon btn-xs'
+                                        buttonId='channelHeaderSummarizeButton'
+                                        onClick={this.openSummarizeModal}
+                                        tooltip={this.props.intl.formatMessage({id: 'channel_header.summarize', defaultMessage: 'Summarize Channel'})}
+                                    >
+                                        <i
+                                            aria-hidden='true'
+                                            className='icon icon-text-box-outline'
+                                        />
+                                    </HeaderIconWrapper>
                                 </div>
                                 <div
                                     id='channelHeaderDescription'
