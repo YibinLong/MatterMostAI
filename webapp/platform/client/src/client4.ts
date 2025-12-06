@@ -4817,6 +4817,21 @@ export default class Client4 {
             {method: 'get'},
         );
     };
+
+    // AI Summarization endpoints
+    summarizeChannel = (channelId: string, timeRange: string) => {
+        return this.doFetch<{summary: string; post_count: number; time_range?: string}>(
+            `${this.getChannelRoute(channelId)}/summarize`,
+            {method: 'post', body: JSON.stringify({time_range: timeRange})},
+        );
+    };
+
+    summarizeThread = (postId: string) => {
+        return this.doFetch<{summary: string; post_count: number}>(
+            `${this.getPostRoute(postId)}/thread/summarize`,
+            {method: 'post'},
+        );
+    };
 }
 
 export function parseAndMergeNestedHeaders(originalHeaders: any) {
