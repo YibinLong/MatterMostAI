@@ -26,6 +26,7 @@ describe('components/ChannelHeader', () => {
             updateChannelNotifyProps: jest.fn(),
             showChannelMembers: jest.fn(),
             fetchChannelRemotes: jest.fn(),
+            openModal: jest.fn(),
         },
         teamId: 'team_id',
         channel: TestHelper.getChannelMock({}),

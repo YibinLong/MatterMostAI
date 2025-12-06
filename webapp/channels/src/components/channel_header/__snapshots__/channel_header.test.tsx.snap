@@ -82,6 +82,17 @@ exports[`components/ChannelHeader should match snapshot with last active display
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -340,6 +351,17 @@ exports[`components/ChannelHeader should match snapshot with no last active disp
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -547,6 +569,17 @@ exports[`components/ChannelHeader should render active channel files 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -703,6 +736,17 @@ exports[`components/ChannelHeader should render active flagged posts 1`] = `
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
@@ -863,6 +907,17 @@ exports[`components/ChannelHeader should render active mentions posts 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -1021,6 +1076,17 @@ exports[`components/ChannelHeader should render active pinned posts 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -1177,6 +1243,17 @@ exports[`components/ChannelHeader should render archived view 1`] = `
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
@@ -1357,6 +1434,17 @@ exports[`components/ChannelHeader should render correct menu when muted 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -1513,6 +1601,17 @@ exports[`components/ChannelHeader should render not active channel files 1`] = `
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
@@ -1695,6 +1794,17 @@ exports[`components/ChannelHeader should render properly when custom status is e
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
@@ -1951,6 +2061,17 @@ exports[`components/ChannelHeader should render properly when custom status is s
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -2199,6 +2320,17 @@ exports[`components/ChannelHeader should render properly when empty 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -2357,6 +2489,17 @@ exports[`components/ChannelHeader should render properly when populated 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -2513,6 +2656,17 @@ exports[`components/ChannelHeader should render properly when populated with cha
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
@@ -2694,6 +2848,17 @@ exports[`components/ChannelHeader should render shared view 1`] = `
                 className="icon icon-file-text-outline"
               />
             </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
+              />
+            </HeaderIconWrapper>
           </div>
           <div
             className="channel-header__description"
@@ -2823,6 +2988,17 @@ exports[`components/ChannelHeader should render the pinned icon with the pinned 
             >
               <i
                 className="icon icon-file-text-outline"
+              />
+            </HeaderIconWrapper>
+            <HeaderIconWrapper
+              buttonClass="channel-header__icon channel-header__icon--left btn btn-icon btn-xs"
+              buttonId="channelHeaderSummarizeButton"
+              onClick={[Function]}
+              tooltip="Summarize Channel"
+            >
+              <i
+                aria-hidden="true"
+                className="icon icon-text-box-outline"
               />
             </HeaderIconWrapper>
           </div>
