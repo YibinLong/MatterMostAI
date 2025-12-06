@@ -26,6 +26,7 @@ import LeaveChannelModal from 'components/leave_channel_modal';
 import MarketplaceModal from 'components/plugin_marketplace/marketplace_modal';
 import {AppCommandParser} from 'components/suggestion/command_provider/app_command_parser/app_command_parser';
 import {intlShim} from 'components/suggestion/command_provider/app_command_parser/app_command_parser_dependencies';
+import SummarizeModal from 'components/summarize_modal';
 import UserSettingsModal from 'components/user_settings/modal';
 
 import {getHistory} from 'utils/browser_history';
@@ -128,6 +129,21 @@ export function executeCommand(message: string, args: CommandArgs): ActionFuncAs
 
             dispatch(openModal({modalId: ModalIdentifiers.PLUGIN_MARKETPLACE, dialogType: MarketplaceModal}));
             return {data: {frontendHandled: true}};
+        case '/summarize': {
+            const channel = getCurrentChannel(state);
+            if (!channel) {
+                return {data: {silentFailureReason: new Error('cannot find current channel')}};
+            }
+            dispatch(openModal({
+                modalId: ModalIdentifiers.SUMMARIZE,
+                dialogType: SummarizeModal,
+                dialogProps: {
+                    channelId: channel.id,
+                    mode: 'channel' as const,
+                },
+            }));
+            return {data: {frontendHandled: true}};
+        }
         case '/collapse':
         case '/expand':
             dispatch(PostActions.resetEmbedVisibility());
