@@ -163,3 +163,12 @@ docker-compose.override.yaml
 **/CLAUDE.local.md
 CLAUDE.md
 .cursorrules
+
+# Claude AI tool configuration
+.claude/
+
+# Compiled server binary
+server/mattermost
+
+# Temporary prepackaged plugins (downloaded during build)
+server/tmpprepackaged/
