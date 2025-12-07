@@ -97,8 +97,11 @@ const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) =>
                     document.body.appendChild(textArea);
                     textArea.focus();
                     textArea.select();
-                    document.execCommand('copy');
+                    const success = document.execCommand('copy');
                     document.body.removeChild(textArea);
+                    if (!success) {
+                        throw new Error('execCommand copy failed');
+                    }
                 }
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
