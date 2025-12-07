@@ -134,14 +134,27 @@ export function executeCommand(message: string, args: CommandArgs): ActionFuncAs
             if (!channel) {
                 return {data: {silentFailureReason: new Error('cannot find current channel')}};
             }
-            dispatch(openModal({
-                modalId: ModalIdentifiers.SUMMARIZE,
-                dialogType: SummarizeModal,
-                dialogProps: {
-                    channelId: channel.id,
-                    mode: 'channel' as const,
-                },
-            }));
+
+            // If we're in a thread (root_id is set), summarize the thread instead of the channel
+            if (args.root_id) {
+                dispatch(openModal({
+                    modalId: ModalIdentifiers.SUMMARIZE,
+                    dialogType: SummarizeModal,
+                    dialogProps: {
+                        postId: args.root_id,
+                        mode: 'thread' as const,
+                    },
+                }));
+            } else {
+                dispatch(openModal({
+                    modalId: ModalIdentifiers.SUMMARIZE,
+                    dialogType: SummarizeModal,
+                    dialogProps: {
+                        channelId: channel.id,
+                        mode: 'channel' as const,
+                    },
+                }));
+            }
             return {data: {frontendHandled: true}};
         }
         case '/collapse':
