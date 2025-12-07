@@ -26,10 +26,12 @@ AWS_DEFAULT_REGION=us-west-2
 | --- | --- |
 | Instance Name | `mattermost-server` |
 | Public IP | `35.88.175.112` |
+| **Domain** | `mattermost-yibin.link` |
 | Region | `us-west-2` |
-| URL | <http://35.88.175.112> |
+| URL | <http://mattermost-yibin.link> |
 | SSH User | `ubuntu` |
 | Mattermost Port | 80 (mapped from container 8065) |
+| Route 53 Hosted Zone | `Z09374349QDSOYOMBJ47` |
 
 ---
 
@@ -330,14 +332,54 @@ aws lightsail delete-instance --instance-name mattermost-server
 
 ---
 
-## 8. Quick Reference
+## 8. Domain Management (Route 53)
 
-**Production URL:** <http://35.88.175.112>
+The domain `mattermost-yibin.link` is registered through AWS Route 53 and points to the Mattermost server.
+
+### DNS Records
+
+| Record | Type | Value |
+| --- | --- | --- |
+| `mattermost-yibin.link` | A | `35.88.175.112` |
+| `www.mattermost-yibin.link` | A | `35.88.175.112` |
+
+### Update DNS Record (if IP changes)
+
+```bash
+set -a && source .env && set +a
+
+aws route53 change-resource-record-sets \
+  --hosted-zone-id "Z09374349QDSOYOMBJ47" \
+  --change-batch '{
+    "Changes": [{
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "mattermost-yibin.link",
+        "Type": "A",
+        "TTL": 300,
+        "ResourceRecords": [{"Value": "NEW_IP_HERE"}]
+      }
+    }]
+  }'
+```
+
+### Check Domain Registration Status
+
+```bash
+set -a && source .env && set +a
+aws route53domains get-domain-detail --domain-name mattermost-yibin.link --region us-east-1
+```
+
+---
+
+## 9. Quick Reference
+
+**Production URL:** <http://mattermost-yibin.link>
 
 **One-liner to verify deployment:**
 
 ```bash
-set -a && source .env && set +a && curl -s -o /dev/null -w "%{http_code}" http://35.88.175.112
+set -a && source .env && set +a && curl -s -o /dev/null -w "%{http_code}" http://mattermost-yibin.link
 ```
 
 Expected output: `200`
