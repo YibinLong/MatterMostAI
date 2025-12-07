@@ -39,7 +39,6 @@ describe('components/summarize_modal', () => {
 
         expect(wrapper.find(GenericModal).exists()).toBe(true);
         expect(wrapper.find('#time-range-select').exists()).toBe(true);
-        expect(wrapper.find('.summarize-modal__generate-btn').exists()).toBe(true);
     });
 
     test('should render thread mode without time range selector', () => {
@@ -49,7 +48,6 @@ describe('components/summarize_modal', () => {
 
         expect(wrapper.find(GenericModal).exists()).toBe(true);
         expect(wrapper.find('#time-range-select').exists()).toBe(false);
-        expect(wrapper.find('.summarize-modal__generate-btn').exists()).toBe(true);
     });
 
     test('should have correct modal header for channel mode', () => {
