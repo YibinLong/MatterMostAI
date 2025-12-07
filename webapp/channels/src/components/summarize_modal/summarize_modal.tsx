@@ -83,9 +83,29 @@ const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) =>
 
     const handleCopy = useCallback(async () => {
         if (summary?.summary) {
-            await navigator.clipboard.writeText(summary.summary);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            try {
+                // Try the modern Clipboard API first (requires secure context)
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(summary.summary);
+                } else {
+                    // Fallback for non-secure contexts (HTTP)
+                    const textArea = document.createElement('textarea');
+                    textArea.value = summary.summary;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    textArea.style.top = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error('Failed to copy to clipboard:', err);
+            }
         }
     }, [summary]);
 
