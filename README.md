@@ -1,8 +1,111 @@
-# [![Mattermost logo](https://user-images.githubusercontent.com/7205829/137170381-fe86eef0-bccc-4fdd-8e92-b258884ebdd7.png)](https://mattermost.com)
+# Mattermost + AI Summarization
 
-[Mattermost](https://mattermost.com) is an open core, self-hosted collaboration platform that offers chat, workflow automation, voice calling, screen sharing, and AI integration. This repo is the primary source for core development on the Mattermost platform; it's written in Go and React, runs as a single Linux binary, and relies on PostgreSQL. A new compiled version is released under an MIT license every month on the 16th.
+> A fork of [Mattermost](https://github.com/mattermost/mattermost) with an integrated AI-powered conversation summarization feature.
 
-[Deploy Mattermost on-premises](https://mattermost.com/deploy/?utm_source=github-mattermost-server-readme), or [try it for free in the cloud](https://mattermost.com/sign-up/?utm_source=github-mattermost-server-readme).
+**Live Demo:** [http://mattermost-yibin.link](http://mattermost-yibin.link)
+
+---
+
+## What I Built
+
+This fork adds an **AI Summarization** feature that allows users to generate intelligent summaries of conversations using OpenAI GPT-4. Users can:
+
+- **Summarize Channels** — Get a digest of what happened over the last hour, day, week, or month
+- **Summarize Threads** — Quickly catch up on long discussion threads
+
+### Entry Points
+
+| Access Method | Description |
+|---------------|-------------|
+| Channel Header Button | Icon in the channel header bar |
+| Post Menu | "Summarize Thread" option in the "..." menu |
+| Slash Command | Type `/summarize` in any channel |
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  FRONTEND (React/TypeScript)                                │
+│  SummarizeModal → Redux Actions → Client4 API               │
+└────────────────────────┬────────────────────────────────────┘
+                         │ HTTP POST
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  BACKEND (Go)                                               │
+│  API Routes → App Layer → OpenAI Client                     │
+│  (Permission checks)  (Fetch posts)  (GPT-4 call)           │
+└────────────────────────┬────────────────────────────────────┘
+                         │ HTTPS
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  OpenAI API (GPT-4)                                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Files:**
+
+| Layer | File |
+|-------|------|
+| API Endpoints | `server/channels/api4/summarize.go` |
+| Business Logic | `server/channels/app/summarize.go` |
+| OpenAI Client | `server/channels/app/openai/client.go` |
+| React Modal | `webapp/channels/src/components/summarize_modal/` |
+| Redux Actions | `webapp/channels/src/actions/views/summarize.ts` |
+
+---
+
+## Technical Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **No caching** | Conversations are dynamic; cache invalidation would be complex |
+| **Time range selector** | Prevents token limit errors; gives users control over scope |
+| **Read permission = Summarize permission** | Summarization doesn't expose more data than reading would |
+| **Environment variable for API key** | Standard secrets management; works with container orchestration |
+| **Synchronous API calls** | Simpler implementation; 5-15s latency is acceptable with loading UI |
+
+---
+
+## Setup & Run
+
+### Prerequisites
+- Go 1.21+
+- Node.js 18+
+- PostgreSQL 15+
+- OpenAI API key
+
+### Local Development
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/YOUR_USERNAME/MatterMostAI.git
+cd MatterMostAI
+
+# 2. Set environment variable
+export OPENAI_API_KEY=sk-your-api-key-here
+
+# 3. Start the server
+cd server && make run-server
+
+# 4. Start the webapp (separate terminal)
+cd webapp && npm run run
+```
+
+### Production Deployment
+
+See the full deployment guide: [docs/deployment/MATTERMOST_DEPLOYMENT_GUIDE.md](docs/deployment/MATTERMOST_DEPLOYMENT_GUIDE.md)
+
+The guide covers AWS Lightsail deployment with Docker, including building custom packages and deploying to the live instance.
+
+---
+
+## Original Mattermost
+
+This is a fork of [mattermost/mattermost](https://github.com/mattermost/mattermost).
+
+[Mattermost](https://mattermost.com) is an open core, self-hosted collaboration platform that offers chat, workflow automation, voice calling, screen sharing, and AI integration. It's written in Go and React, runs as a single Linux binary, and relies on PostgreSQL.
 
 <img width="1006" alt="mattermost user interface" src="https://user-images.githubusercontent.com/7205829/136107976-7a894c9e-290a-490d-8501-e5fdbfc3785a.png">
 
