@@ -180,38 +180,107 @@ ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112
 
 ---
 
-## 4. Deploying Code Changes
+## 4. Deploying Code Changes (RECOMMENDED METHOD)
 
 When you need to deploy updated Mattermost code (custom build):
 
-### 4.1 Build Custom Mattermost Docker Image
+> **IMPORTANT WARNING FOR AGENTIC LLMs:** The `make package-linux-amd64` command creates a tar file with a problematic structure. It contains both `mattermost/` (binaries) and `../mattermost/` (resources) paths. GNU tar on Linux **blocks extraction of `..` paths for security reasons**, causing silent failures. You MUST use the repackaging method below.
 
-On your local machine, build the server:
+### 4.1 Build the Webapp and Server
+
+On your local machine:
 
 ```bash
-cd /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI/server
+cd /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI
+
+# Step 1: Build the webapp (if you have frontend changes)
+cd webapp && make dist && cd ..
+
+# Step 2: Build the server binary for Linux
+cd server
 make build-linux-amd64
+
+# Step 3: Run the package command (creates dist/ directories)
 make package-linux-amd64
 ```
 
-This creates `dist/mattermost-team-linux-amd64.tar.gz`.
+### 4.2 Repackage the Tar File (CRITICAL STEP)
 
-### 4.2 Build and Push Custom Docker Image
+The generated tar file has broken paths. You MUST repackage it locally:
 
-Create a Dockerfile for your custom build:
+```bash
+cd /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI/server
+
+# Create a clean package directory
+rm -rf /tmp/mm_repack
+mkdir -p /tmp/mm_repack/mattermost/bin
+mkdir -p /tmp/mm_repack/mattermost/logs
+
+# Copy resources (webapp, templates, i18n, config, fonts)
+cp -r dist/mattermost/* /tmp/mm_repack/mattermost/
+
+# Copy the Linux binaries
+cp bin/linux_amd64/mattermost /tmp/mm_repack/mattermost/bin/
+cp bin/linux_amd64/mmctl /tmp/mm_repack/mattermost/bin/
+
+# Create the fixed tar file
+cd /tmp/mm_repack
+tar -czf mattermost-deploy.tar.gz mattermost
+
+# Verify the tar structure (should show mattermost/ not ../mattermost/)
+tar -tzf mattermost-deploy.tar.gz | head -10
+```
+
+### 4.3 Upload and Deploy to Instance
+
+```bash
+# Download SSH key (if not already done)
+set -a && source /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI/.env && set +a
+aws lightsail download-default-key-pair --query 'privateKeyBase64' --output text > /tmp/lightsail-key.pem
+chmod 600 /tmp/lightsail-key.pem
+
+# Upload the fixed tar file
+scp -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem /tmp/mm_repack/mattermost-deploy.tar.gz ubuntu@35.88.175.112:/tmp/
+
+# Deploy on the instance
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "
+cd /opt/mattermost && \
+sudo docker compose down && \
+sudo rm -rf mattermost && \
+sudo tar -xzf /tmp/mattermost-deploy.tar.gz && \
+sudo chown -R 2000:2000 mattermost && \
+sudo docker build -t mattermost-custom:latest . && \
+sudo docker compose up -d
+"
+```
+
+### 4.4 Verify Deployment
+
+```bash
+# Wait 15-20 seconds for startup, then verify
+curl -s -o /dev/null -w "%{http_code}" http://mattermost-yibin.link
+# Expected: 200
+
+# Check container logs if needed
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 \
+  "sudo docker logs mattermost-mattermost-1 --tail 20"
+```
+
+### 4.5 Instance Dockerfile (Already Configured)
+
+The instance at `/opt/mattermost/Dockerfile` is already configured:
 
 ```dockerfile
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /mattermost
-COPY dist/mattermost-team-linux-amd64.tar.gz /tmp/
-RUN tar -xzf /tmp/mattermost-team-linux-amd64.tar.gz -C /tmp && \
-    mv /tmp/mattermost/* /mattermost/ && \
-    rm -rf /tmp/mattermost /tmp/mattermost-team-linux-amd64.tar.gz
+
+COPY mattermost/ /mattermost/
 
 RUN useradd -u 2000 -U -m mattermost && \
+    mkdir -p /mattermost/config /mattermost/data /mattermost/logs /mattermost/plugins /mattermost/client/plugins /mattermost/bleve-indexes && \
     chown -R mattermost:mattermost /mattermost
 
 USER mattermost
@@ -220,44 +289,64 @@ ENTRYPOINT ["/mattermost/bin/mattermost"]
 CMD ["server"]
 ```
 
-Build and push to a registry (e.g., Docker Hub or ECR):
+### 4.6 Instance docker-compose.yml (Already Configured)
 
-```bash
-docker build -t yourusername/mattermost-custom:latest .
-docker push yourusername/mattermost-custom:latest
+The instance at `/opt/mattermost/docker-compose.yml`:
+
+```yaml
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: mmuser_password
+      POSTGRES_DB: mattermost
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mattermost:
+    image: mattermost-custom:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "80:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:mmuser_password@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SERVICESETTINGS_SITEURL: ""
+      MM_TEAMSETTINGS_ENABLEOPENSERVER: "true"
+    volumes:
+      - /opt/mattermost/config:/mattermost/config
+      - /opt/mattermost/data:/mattermost/data
+      - /opt/mattermost/logs:/mattermost/logs
+      - /opt/mattermost/plugins:/mattermost/plugins
+      - /opt/mattermost/client-plugins:/mattermost/client/plugins
+      - /opt/mattermost/bleve-indexes:/mattermost/bleve-indexes
+
+volumes:
+  postgres_data:
 ```
 
-### 4.3 Update the Running Instance
+### 4.7 Alternative: Direct Binary Update (Quick Fixes Only)
 
-SSH into the instance and update the docker-compose.yml:
-
-```bash
-ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112
-
-# On the instance:
-cd /opt/mattermost
-
-# Edit docker-compose.yml to use your custom image
-sudo sed -i 's|mattermost/mattermost-team-edition:latest|yourusername/mattermost-custom:latest|' docker-compose.yml
-
-# Pull new image and restart
-sudo docker compose pull
-sudo docker compose down
-sudo docker compose up -d
-```
-
-### 4.4 Alternative: Direct File Update (No Custom Image)
-
-For small changes, you can copy files directly:
+For server-only changes (no webapp changes), you can update just the binary:
 
 ```bash
-# From local machine - copy a specific file
-scp -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ./server/some-file.go ubuntu@35.88.175.112:/tmp/
+# Copy binary to instance
+scp -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem \
+  /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI/server/bin/linux_amd64/mattermost \
+  ubuntu@35.88.175.112:/tmp/
 
-# SSH in and copy to container
-ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112
-sudo docker cp /tmp/some-file.go mattermost-mattermost-1:/mattermost/bin/
-cd /opt/mattermost && sudo docker compose restart mattermost
+# Replace binary and restart
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "
+sudo docker compose -f /opt/mattermost/docker-compose.yml down && \
+sudo cp /tmp/mattermost /opt/mattermost/mattermost/bin/mattermost && \
+sudo chown 2000:2000 /opt/mattermost/mattermost/bin/mattermost && \
+sudo docker build -t mattermost-custom:latest /opt/mattermost && \
+sudo docker compose -f /opt/mattermost/docker-compose.yml up -d
+"
 ```
 
 ---
@@ -329,6 +418,25 @@ aws lightsail delete-instance --instance-name mattermost-server
 | Permission denied errors | Run `sudo chown -R 2000:2000 /opt/mattermost` on instance |
 | Database connection failed | Check postgres container: `sudo docker logs mattermost-postgres-1` |
 | SSH key issues | Re-download: `aws lightsail download-default-key-pair` |
+| **"unable to find i18n directory"** | Tar extraction failed silently. The `make package-linux-amd64` tar has `../mattermost/` paths that GNU tar blocks. You MUST repackage locally (see Section 4.2) |
+| **Tar shows "Member name contains '..'"** | This is the broken tar structure. Repackage the tar file locally before uploading (see Section 4.2) |
+| Missing templates/fonts/client | Same root cause as i18n - tar extraction issue. Repackage locally |
+| Container logs show startup but no web response | Check if `/mattermost/client/` exists in container: `sudo docker exec mattermost-mattermost-1 ls /mattermost/client/` |
+
+### Common Tar Extraction Issue (For Agentic LLMs)
+
+If you see errors like:
+```
+tar: ../mattermost/: Member name contains '..'
+tar: ../mattermost/config/: Member name contains '..'
+tar: Exiting with failure status due to previous errors
+```
+
+**This is expected behavior from the broken tar file.** GNU tar blocks `..` paths for security. The tar file created by `make package-linux-amd64` has this structure:
+- `mattermost/` - contains only `bin/`, `logs/`, `prepackaged_plugins/`
+- `../mattermost/` - contains `client/`, `config/`, `fonts/`, `i18n/`, `templates/` (BLOCKED)
+
+**Solution:** Always repackage locally using the method in Section 4.2 before uploading to the server.
 
 ---
 
@@ -379,13 +487,40 @@ aws route53domains get-domain-detail --domain-name mattermost-yibin.link --regio
 **One-liner to verify deployment:**
 
 ```bash
-set -a && source .env && set +a && curl -s -o /dev/null -w "%{http_code}" http://mattermost-yibin.link
+curl -s -o /dev/null -w "%{http_code}" http://mattermost-yibin.link
 ```
 
 Expected output: `200`
 
-**One-liner to restart after changes:**
+**One-liner to restart containers (no rebuild):**
 
 ```bash
-ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "cd /opt/mattermost && sudo docker compose pull && sudo docker compose down && sudo docker compose up -d"
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "cd /opt/mattermost && sudo docker compose down && sudo docker compose up -d"
+```
+
+**One-liner to rebuild and restart (after uploading new tar):**
+
+```bash
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "cd /opt/mattermost && sudo docker compose down && sudo rm -rf mattermost && sudo tar -xzf /tmp/mattermost-deploy.tar.gz && sudo chown -R 2000:2000 mattermost && sudo docker build -t mattermost-custom:latest . && sudo docker compose up -d"
+```
+
+**Full deployment from local machine (after building):**
+
+```bash
+# Assumes you've already run: make build-linux-amd64 && make package-linux-amd64
+
+# 1. Repackage locally
+cd /Users/yibin/Documents/WORKZONE/VSCODE/GAUNTLET_AI/8_Week/MatterMostAI/server && \
+rm -rf /tmp/mm_repack && \
+mkdir -p /tmp/mm_repack/mattermost/{bin,logs} && \
+cp -r dist/mattermost/* /tmp/mm_repack/mattermost/ && \
+cp bin/linux_amd64/{mattermost,mmctl} /tmp/mm_repack/mattermost/bin/ && \
+cd /tmp/mm_repack && tar -czf mattermost-deploy.tar.gz mattermost
+
+# 2. Upload and deploy
+scp -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem /tmp/mm_repack/mattermost-deploy.tar.gz ubuntu@35.88.175.112:/tmp/ && \
+ssh -o StrictHostKeyChecking=no -i /tmp/lightsail-key.pem ubuntu@35.88.175.112 "cd /opt/mattermost && sudo docker compose down && sudo rm -rf mattermost && sudo tar -xzf /tmp/mattermost-deploy.tar.gz && sudo chown -R 2000:2000 mattermost && sudo docker build -t mattermost-custom:latest . && sudo docker compose up -d"
+
+# 3. Verify
+sleep 20 && curl -s -o /dev/null -w "%{http_code}" http://mattermost-yibin.link
 ```
