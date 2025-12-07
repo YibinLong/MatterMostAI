@@ -4307,6 +4307,8 @@
   "error.generic.message": "An error has occurred.",
   "error.generic.siteLink": "Back to {siteName}",
   "error.generic.title": "Error",
+  "error.javascript": "A JavaScript error has occurred. Please use the JavaScript console to capture and report the error",
+  "A JavaScript error has occurred. Please use the JavaScript console to capture and report the error": "A JavaScript error has occurred. Please use the JavaScript console to capture and report the error",
   "error.local_storage.help1": "Enable cookies",
   "error.local_storage.help2": "Turn off private browsing",
   "error.local_storage.help3": "Use a supported browser (IE 11, Chrome 61+, Firefox 60+, Safari 12+, Edge 42+)",

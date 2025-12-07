@@ -86,7 +86,7 @@ export function logError(error: ServerError, options: LogErrorOptions = {}): Act
         }
 
         if (options && options.errorBarMode === LogErrorBarMode.InDevMode) {
-            serializedError.message = 'A JavaScript error has occurred. Please use the JavaScript console to capture and report the error';
+            serializedError.message = 'error.javascript';
         }
 
         dispatch(getLogErrorAction(serializedError, shouldShowErrorBar(getState(), options)));

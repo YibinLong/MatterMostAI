@@ -1522,6 +1522,18 @@
     "translation": "The settings command is not supported on your device."
   },
   {
+    "id": "api.command_summarize.desc",
+    "translation": "Summarize the current channel using AI"
+  },
+  {
+    "id": "api.command_summarize.name",
+    "translation": "summarize"
+  },
+  {
+    "id": "api.command_summarize.unsupported.app_error",
+    "translation": "The summarize command is not supported on your device."
+  },
+  {
     "id": "api.command_share.available_actions",
     "translation": "Available actions: {{.Actions}}"
   },
