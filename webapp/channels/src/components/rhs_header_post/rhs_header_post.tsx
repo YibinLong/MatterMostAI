@@ -11,15 +11,17 @@ import KeyboardShortcutSequence, {
     KEYBOARD_SHORTCUTS,
 } from 'components/keyboard_shortcuts/keyboard_shortcuts_sequence';
 import PopoutButton from 'components/popout_button';
+import SummarizeModal from 'components/summarize_modal';
 import FollowButton from 'components/threading/common/follow_button';
 import CRTThreadsPaneTutorialTip
     from 'components/tours/crt_tour/crt_threads_pane_tutorial_tip';
 import WithTooltip from 'components/with_tooltip';
 
 import {getHistory} from 'utils/browser_history';
-import {RHSStates} from 'utils/constants';
+import {ModalIdentifiers, RHSStates} from 'utils/constants';
 import {popoutThread} from 'utils/popouts/popout_windows';
 
+import type {ModalData} from 'types/actions';
 import type {RhsState} from 'types/store/rhs';
 
 type Props = WrappedComponentProps & {
@@ -44,6 +46,7 @@ type Props = WrappedComponentProps & {
     toggleRhsExpanded: (e: React.MouseEvent) => void;
     setThreadFollow: (userId: string, teamId: string, threadId: string, newState: boolean) => void;
     focusPost: (postId: string, returnTo: string, currentUserId: string, option?: {skipRedirectReplyPermalink: boolean}) => Promise<void>;
+    openModal: <T>(modalData: ModalData<T>) => void;
 };
 
 class RhsHeaderPost extends React.PureComponent<Props> {
@@ -87,6 +90,17 @@ class RhsHeaderPost extends React.PureComponent<Props> {
         }
         await popoutThread(intl, rootPostId, currentTeam.name, (postId, returnTo) => {
             focusPost(postId, returnTo, currentUserId, {skipRedirectReplyPermalink: true});
+        });
+    };
+
+    openSummarizeModal = () => {
+        this.props.openModal({
+            modalId: ModalIdentifiers.SUMMARIZE,
+            dialogType: SummarizeModal,
+            dialogProps: {
+                postId: this.props.rootPostId,
+                mode: 'thread' as const,
+            },
         });
     };
 
@@ -210,6 +224,26 @@ class RhsHeaderPost extends React.PureComponent<Props> {
                             onClick={this.handleFollowChange}
                         />
                     ) : null}
+                    <WithTooltip
+                        title={
+                            <FormattedMessage
+                                id='rhs_header.summarizeThread'
+                                defaultMessage='Summarize Thread'
+                            />
+                        }
+                    >
+                        <button
+                            type='button'
+                            className='sidebar--right__summarize btn btn-icon btn-sm'
+                            aria-label={formatMessage({id: 'rhs_header.summarizeThread', defaultMessage: 'Summarize Thread'})}
+                            onClick={this.openSummarizeModal}
+                        >
+                            <i
+                                className='icon icon-text-box-outline'
+                                aria-hidden='true'
+                            />
+                        </button>
+                    </WithTooltip>
                     <PopoutButton onClick={this.popout}/>
                     <WithTooltip
                         title={rhsHeaderTooltipContent}

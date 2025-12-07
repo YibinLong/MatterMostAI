@@ -22,6 +22,7 @@ import {
     toggleRhsExpanded,
     goBack,
 } from 'actions/views/rhs';
+import {openModal} from 'actions/views/modals';
 import {getIsRhsExpanded} from 'selectors/rhs';
 import {getIsMobileView} from 'selectors/views/browser';
 
@@ -87,6 +88,7 @@ const actions = {
     setThreadFollow,
     goBack,
     focusPost,
+    openModal,
 };
 
 export default connect(makeMapStateToProps, actions)(RhsHeaderPost);
