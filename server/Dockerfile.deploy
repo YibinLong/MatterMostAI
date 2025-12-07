@@ -1,0 +1,17 @@
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /mattermost
+COPY dist/mattermost-clean.tar.gz /tmp/
+RUN tar -xzf /tmp/mattermost-clean.tar.gz -C / && \
+    rm -f /tmp/mattermost-clean.tar.gz && \
+    ls -la /mattermost/
+
+RUN useradd -u 2000 -U -m mattermost && \
+    chown -R mattermost:mattermost /mattermost
+
+USER mattermost
+EXPOSE 8065
+ENTRYPOINT ["/mattermost/bin/mattermost"]
+CMD ["server"]
