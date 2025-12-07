@@ -292,20 +292,6 @@ const SummaryCard = styled.div`
     }
 `;
 
-const ActionBar = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-`;
-
-const CopyButton = styled(Button)<{$copied?: boolean}>`
-    ${({$copied}) => $copied && css`
-        background: rgba(var(--online-indicator-rgb), 0.1);
-        color: var(--online-indicator);
-        border-color: rgba(var(--online-indicator-rgb), 0.24);
-    `}
-`;
-
 const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) => {
     const {formatMessage} = useIntl();
     const dispatch = useDispatch();
@@ -314,7 +300,6 @@ const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) =>
     const [summary, setSummary] = useState<SummarizeResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
 
     const handleSummarize = useCallback(async () => {
         setLoading(true);
@@ -342,37 +327,6 @@ const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) =>
             setLoading(false);
         }
     }, [dispatch, mode, channelId, postId, timeRange]);
-
-    const handleCopy = useCallback(async () => {
-        if (summary?.summary) {
-            try {
-                // Try the modern Clipboard API first (requires secure context)
-                if (navigator.clipboard?.writeText) {
-                    await navigator.clipboard.writeText(summary.summary);
-                } else {
-                    // Fallback for non-secure contexts (HTTP)
-                    const textArea = document.createElement('textarea');
-                    textArea.value = summary.summary;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-9999px';
-                    textArea.style.top = '-9999px';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    const success = document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    if (!success) {
-                        throw new Error('execCommand copy failed');
-                    }
-                }
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error('Failed to copy to clipboard:', err);
-            }
-        }
-    }, [summary]);
 
     const handleClose = useCallback(() => {
         dispatch(closeModal(ModalIdentifiers.SUMMARIZE));
@@ -475,16 +429,6 @@ const SummarizeModal: React.FC<Props> = ({onExited, channelId, postId, mode}) =>
                         <SummaryCard>
                             {summary.summary}
                         </SummaryCard>
-                        <ActionBar>
-                            <CopyButton
-                                variant='secondary'
-                                onClick={handleCopy}
-                                $copied={copied}
-                            >
-                                <i className={copied ? 'icon icon-check' : 'icon icon-content-copy'}/>
-                                {copied ? formatMessage({id: 'summarize_modal.copied', defaultMessage: 'Copied!'}) : formatMessage({id: 'summarize_modal.copy', defaultMessage: 'Copy'})}
-                            </CopyButton>
-                        </ActionBar>
                     </ResultContainer>
                 )}
             </ModalBody>
